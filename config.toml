@@ -1,0 +1,24 @@
+# panelforge configuration. Every value here is optional.
+
+offline = false          # true => never touch the network (models must be cached)
+
+[paths]
+# models_dir  = "~/models"        # defaults to ./models
+# outputs_dir = "~/Pictures/panelforge"
+
+[hardware]
+# device     = "mps"     # mps | cuda | cpu. Auto-detected when unset.
+# dtype      = "float16" # float16 | bfloat16 | float32. Auto-selected when unset.
+# low_memory = true      # force the aggressive memory path regardless of RAM
+
+[generation]
+steps    = 28
+cfg      = 6.0
+width    = 1024
+height   = 1024
+sampler  = "dpmpp_2m_karras"
+# checkpoint = "animagine-xl-4.0"   # default model, by name or path
+
+[server]
+host = "127.0.0.1"
+port = 8188
