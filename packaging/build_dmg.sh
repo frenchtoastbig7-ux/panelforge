@@ -33,6 +33,9 @@ MODELS=(checkpoints/animagine-xl-4.0.safetensors
         controlnet/openpose-sdxl/diffusion_pytorch_model.safetensors
         detectors/face_yolov8m.pt)
 for f in "${MODELS[@]}"; do [ -f "$ROOT/models/$f" ] || die "missing models/$f"; done
+# The bundled weights may only be redistributed together with their licences.
+LICENSES=(THIRD_PARTY_NOTICES.md Apache-2.0.txt "CreativeML-Open-RAIL++-M.md")
+for f in "${LICENSES[@]}"; do [ -f "$ROOT/packaging/licenses/$f" ] || die "missing packaging/licenses/$f"; done
 SDXL_CONFIG="${PANELFORGE_SDXL_CONFIG:-$(ls -d "$HOME"/.cache/huggingface/hub/models--stabilityai--stable-diffusion-xl-base-1.0/snapshots/*/ 2>/dev/null | head -1)}"
 [ -n "$SDXL_CONFIG" ] && [ -f "$SDXL_CONFIG/model_index.json" ] \
   || die "SDXL config folder not found; run the app once from source, or set PANELFORGE_SDXL_CONFIG"
@@ -84,6 +87,11 @@ cp -RL "$SDXL_CONFIG" "$RES/configs/sdxl"
 step "Icon"
 [ -f "$ROOT/packaging/AppIcon.icns" ] || ( cd "$ROOT" && uv run python packaging/make_icon.py )
 cp "$ROOT/packaging/AppIcon.icns" "$RES/AppIcon.icns"
+
+step "Licences (inside the app, before signing)"
+mkdir -p "$RES/licenses"
+cp "$ROOT"/packaging/licenses/* "$RES/licenses/"
+cp "$ROOT/LICENSE" "$RES/licenses/PanelForge-LICENSE.txt"
 
 step "Launcher and Info.plist"
 # The interpreter sits in Contents/MacOS so macOS attributes the process to the
@@ -144,6 +152,9 @@ codesign --verify --strict --verbose=1 "$APP" 2>&1 | sed 's/^/  /'
 
 step "Disk image (this compresses ~$((MODELS_GB + 2)) GB)"
 ln -s /Applications "$STAGE/Applications"
+# Visible in the disk image window, next to the app.
+mkdir -p "$STAGE/Third-Party Licenses"
+cp "$RES"/licenses/* "$STAGE/Third-Party Licenses/"
 hdiutil create -volname "$APP_NAME" -srcfolder "$STAGE" -fs APFS -format ULFO -ov "$DMG" >/dev/null
 hdiutil verify "$DMG" >/dev/null && echo "  checksum verified"
 

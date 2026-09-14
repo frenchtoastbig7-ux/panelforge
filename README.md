@@ -355,4 +355,7 @@ licence. The models the app is built and tested with carry their own terms:
 | Face detector (`Bingsu/adetailer`, `face_yolov8m.pt`) | Apache-2.0 |
 
 A `.dmg` built with `packaging/build_dmg.sh` bundles those weights, so anyone
-distributing that image must also comply with each model's licence.
+distributing that image must also comply with each model's licence. The licence texts and a
+notices file live in [`packaging/licenses/`](packaging/licenses/); the build
+copies them into the app and into a **Third-Party Licenses** folder in the disk
+image.
