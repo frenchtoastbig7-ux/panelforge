@@ -131,7 +131,7 @@ cat > "$CONTENTS/Info.plist" <<PLIST
   <key>LSArchitecturePriority</key><array><string>arm64</string></array>
   <key>LSApplicationCategoryType</key><string>public.app-category.graphics-design</string>
   <key>NSHighResolutionCapable</key><true/>
-  <key>NSHumanReadableCopyright</key><string>Local build. Models are subject to their own licences.</string>
+  <key>NSHumanReadableCopyright</key><string>Copyright (c) 2026 Sovereign Edge Inc. MIT licensed. Models are subject to their own licences.</string>
 </dict>
 </plist>
 PLIST
