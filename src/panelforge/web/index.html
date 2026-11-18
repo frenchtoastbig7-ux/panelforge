@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PanelForge</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <h1>Panel<span>Forge</span></h1>
+  <nav class="workspaces">
+    <button class="ws active" data-ws="image">Image</button>
+    <button class="ws" data-ws="studio">Comic Studio</button>
+    <button class="ws" data-ws="cast">Cast</button>
+    <button class="ws" data-ws="train">Train</button>
+  </nav>
+  <div id="status" class="status">connecting…</div>
+</header>
+
+<main id="ws-image">
+  <section class="panel controls">
+    <div class="tabs" id="modes">
+      <button class="tab active" data-mode="txt2img">Text → Image</button>
+      <button class="tab" data-mode="img2img">Image → Image</button>
+      <button class="tab" data-mode="inpaint">Inpaint</button>
+    </div>
+
+    <label class="field">
+      <span>Prompt</span>
+      <textarea id="prompt" rows="4" placeholder="1girl, silver hair, detailed eyes, (masterpiece:1.2), best quality"></textarea>
+    </label>
+
+    <label class="field">
+      <span>Negative prompt</span>
+      <textarea id="negative" rows="2"></textarea>
+    </label>
+
+    <label class="field">
+      <span>Checkpoint</span>
+      <select id="checkpoint"></select>
+    </label>
+
+    <label class="field">
+      <span>Style</span>
+      <select id="style"></select>
+    </label>
+
+    <div class="field" id="lora-field">
+      <span>LoRAs</span>
+      <div id="loras"></div>
+      <button class="ghost" id="add-lora" type="button">+ add LoRA</button>
+    </div>
+
+    <div class="grid2">
+      <label class="field"><span>Sampler</span><select id="sampler"></select></label>
+      <label class="field"><span>Size</span><select id="size"></select></label>
+    </div>
+
+    <div class="field" id="pose-field">
+      <span>Pose control <small id="cn-note"></small></span>
+      <div class="grid2">
+        <select id="pose-preset"></select>
+        <button class="ghost" id="pose-preview" type="button">preview</button>
+      </div>
+      <label class="check"><input type="checkbox" id="pose-on"> Use pose (ControlNet)</label>
+      <label class="check"><input type="checkbox" id="pose-mirror"> Mirror</label>
+      <label class="field"><span>Pose strength <b id="cn-scale-v">0.90</b></span>
+        <input type="range" id="cn-scale" min="0.1" max="1.5" step="0.05" value="0.9"></label>
+      <img id="pose-thumb" class="pose-thumb hidden" alt="pose preview">
+    </div>
+
+    <label class="check"><input type="checkbox" id="face-on"> Face enhance</label>
+    <label class="field"><span>Face enhance mode</span>
+      <select id="face-mode">
+        <option value="inpaint">Regenerate face only (keep hair/background)</option>
+        <option value="img2img">Refine whole face crop</option>
+      </select></label>
+    <label class="check"><input type="checkbox" id="hires-on"> Hi-res pass</label>
+
+    <div class="grid2">
+      <label class="field"><span>Steps <b id="steps-v">28</b></span>
+        <input type="range" id="steps" min="1" max="80" value="28"></label>
+      <label class="field"><span>CFG <b id="cfg-v">6.0</b></span>
+        <input type="range" id="cfg" min="1" max="20" step="0.5" value="6"></label>
+    </div>
+
+    <div class="grid2">
+      <label class="field"><span>Seed <small>(−1 = random)</small></span>
+        <input type="number" id="seed" value="-1"></label>
+      <label class="field"><span>Batch</span>
+        <input type="number" id="batch" value="1" min="1" max="16"></label>
+    </div>
+
+    <label class="field img-only hidden"><span>Denoise strength <b id="strength-v">0.75</b></span>
+      <input type="range" id="strength" min="0.05" max="1" step="0.05" value="0.75"></label>
+
+    <div class="field img-only hidden">
+      <span>Input image</span>
+      <input type="file" id="init-file" accept="image/*">
+    </div>
+
+    <div class="field inpaint-only hidden">
+      <span>Mask <small>paint the area to regenerate</small></span>
+      <div class="brush-row">
+        <input type="range" id="brush" min="5" max="150" value="45">
+        <button class="ghost" id="clear-mask" type="button">clear</button>
+      </div>
+    </div>
+
+    <button id="go" class="primary">Generate</button>
+    <button id="cancel" class="ghost hidden">Cancel</button>
+    <div id="progress" class="progress hidden"><div id="bar"></div><span id="ptext"></span></div>
+  </section>
+
+  <section class="panel stage">
+    <div id="canvas-wrap" class="canvas-wrap hidden">
+      <canvas id="base"></canvas>
+      <canvas id="mask"></canvas>
+    </div>
+    <div id="viewer" class="viewer">
+      <p class="empty">No image yet. Pick a checkpoint and hit Generate.</p>
+    </div>
+    <div id="meta" class="meta"></div>
+  </section>
+
+  <section class="panel gallery">
+    <h2>History</h2>
+    <div id="history"></div>
+  </section>
+</main>
+
+
+<main id="ws-studio" class="hidden">
+  <section class="panel controls">
+    <div class="field">
+      <span>Page</span>
+      <div class="grid2">
+        <select id="s-layout"></select>
+        <select id="s-preset"></select>
+      </div>
+    </div>
+    <div class="grid2">
+      <label class="field"><span>Reading order</span>
+        <select id="s-order">
+          <option value="rtl">Right→left (manga)</option>
+          <option value="ltr">Left→right (comic)</option>
+        </select></label>
+      <label class="field"><span>Gutter <b id="s-gutter-v">0.018</b></span>
+        <input type="range" id="s-gutter" min="0" max="0.06" step="0.002" value="0.018"></label>
+    </div>
+    <button class="ghost" id="s-new">Apply layout (clears panels)</button>
+
+    <div class="field">
+      <span>Cast in this page</span>
+      <div id="s-cast" class="cast-list"></div>
+    </div>
+
+    <div class="field">
+      <span>Generation</span>
+      <select id="s-checkpoint"></select>
+    </div>
+    <label class="field"><span>Style</span><select id="s-style"></select></label>
+    <div class="grid2">
+      <label class="field"><span>Steps <b id="s-steps-v">28</b></span>
+        <input type="range" id="s-steps" min="1" max="80" value="28"></label>
+      <label class="field"><span>CFG <b id="s-cfg-v">6.0</b></span>
+        <input type="range" id="s-cfg" min="1" max="20" step="0.5" value="6"></label>
+    </div>
+    <label class="check"><input type="checkbox" id="s-hires"> Hi-res pass (slower, sharper)</label>
+    <label class="check"><input type="checkbox" id="s-onlyempty" checked> Only fill empty panels</label>
+
+    <button id="s-generate" class="primary">Generate panels</button>
+    <div id="s-progress" class="progress hidden"><div id="s-bar"></div><span id="s-ptext"></span></div>
+
+    <div class="field">
+      <span>Project</span>
+      <div class="grid2">
+        <input type="text" id="s-name" placeholder="chapter-1">
+        <button class="ghost" id="s-save">Save</button>
+      </div>
+      <select id="s-projects"></select>
+      <button class="ghost" id="s-load">Load selected</button>
+      <button class="ghost" id="s-export">Export page PNG</button>
+    </div>
+  </section>
+
+  <section class="panel stage">
+    <div class="stage-head">
+      <span class="hint">Click a panel to write its prompt · drag a bubble to move it</span>
+      <button class="ghost" id="s-addbubble">+ bubble</button>
+    </div>
+    <div id="s-canvas" class="page-canvas">
+      <img id="s-preview" alt="page preview">
+      <div id="s-overlay" class="overlay"></div>
+    </div>
+  </section>
+
+  <section class="panel inspector">
+    <h2 id="s-insp-title">Nothing selected</h2>
+    <div id="s-inspector"></div>
+  </section>
+</main>
+
+<main id="ws-cast" class="hidden">
+  <section class="panel controls">
+    <h2 class="sect">New / edit character</h2>
+    <label class="field"><span>Name</span><input type="text" id="c-name"></label>
+    <label class="field"><span>Appearance tags</span>
+      <textarea id="c-prompt" rows="4" placeholder="1girl, silver hair, blue eyes, school uniform"></textarea></label>
+    <label class="field"><span>Negative</span><textarea id="c-negative" rows="2"></textarea></label>
+    <div class="grid2">
+      <label class="field"><span>Locked seed <small>(−1 off)</small></span>
+        <input type="number" id="c-seed" value="-1"></label>
+      <label class="field"><span>&nbsp;</span><button class="primary" id="c-save">Save character</button></label>
+    </div>
+    <div class="field"><span>LoRAs</span><div id="c-loras"></div>
+      <button class="ghost" id="c-addlora" type="button">+ add LoRA</button></div>
+    <input type="hidden" id="c-id">
+    <button class="ghost" id="c-clear">Clear form</button>
+
+    <h2 class="sect" style="margin-top:14px">Character sheet</h2>
+    <div class="grid2">
+      <label class="field"><span>Preset</span><select id="c-sheet-preset"></select></label>
+      <label class="field"><span>&nbsp;</span>
+        <button class="primary" id="c-sheet-go">Generate sheet</button></label>
+    </div>
+    <div id="c-sheet-progress" class="progress hidden">
+      <div id="c-sheet-bar"></div><span id="c-sheet-text"></span></div>
+    <div id="c-sheet-out"></div>
+  </section>
+  <section class="panel stage">
+    <h2 class="sect">Cast</h2>
+    <div id="c-list" class="cast-grid"></div>
+  </section>
+</main>
+
+<main id="ws-train" class="hidden">
+  <section class="panel controls">
+    <h2 class="sect">Train a LoRA</h2>
+    <label class="field"><span>Dataset folder <small>(20–30 images + optional .txt captions)</small></span>
+      <input type="text" id="t-dataset" placeholder="/Users/you/datasets/my-character"></label>
+    <button class="ghost hidden" id="t-pick" type="button">Choose folder…</button>
+    <label class="field"><span>Output name</span><input type="text" id="t-name" placeholder="my-character"></label>
+    <label class="field"><span>Trigger word</span><input type="text" id="t-trigger" placeholder="mychar"></label>
+    <label class="field"><span>Base checkpoint</span><select id="t-checkpoint"></select></label>
+    <div class="grid2">
+      <label class="field"><span>Steps <b id="t-steps-v">1000</b></span>
+        <input type="range" id="t-steps" min="100" max="4000" step="50" value="1000"></label>
+      <label class="field"><span>Rank <b id="t-rank-v">16</b></span>
+        <input type="range" id="t-rank" min="4" max="64" step="4" value="16"></label>
+    </div>
+    <div class="grid2">
+      <label class="field"><span>Resolution</span>
+        <select id="t-res"><option>512</option><option selected>768</option><option>1024</option></select></label>
+      <label class="field"><span>Learning rate</span>
+        <input type="number" id="t-lr" value="0.0001" step="0.00001"></label>
+    </div>
+    <button id="t-start" class="primary">Start training</button>
+    <button id="t-cancel" class="ghost hidden">Cancel</button>
+  </section>
+  <section class="panel stage">
+    <h2 class="sect">Progress</h2>
+    <div id="t-warnings"></div>
+    <div id="t-progress" class="progress hidden"><div id="t-bar"></div><span id="t-text"></span></div>
+    <pre id="t-log" class="log"></pre>
+  </section>
+</main>
+
+<script src="/static/app.js"></script>
+<script src="/static/studio.js"></script>
+<script src="/static/extras.js"></script>
+</body>
+</html>
