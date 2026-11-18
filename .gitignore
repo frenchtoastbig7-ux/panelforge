@@ -1,0 +1,19 @@
+.venv/
+__pycache__/
+*.pyc
+models/**/*.safetensors
+models/**/*.ckpt
+models/**/*.bin
+models/**/*.pt
+outputs/
+.DS_Store
+
+# packaging
+build/
+dist/
+.claude/
+characters.json
+projects/
+styles.json
+models/
+.pytest_cache/

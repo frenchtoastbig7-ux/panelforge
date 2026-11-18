@@ -1,0 +1,49 @@
+[project]
+name = "panelforge"
+version = "0.1.0"
+description = "Local, offline anime image generation workbench built directly on diffusers"
+license = { text = "MIT" }
+authors = [{ name = "Sovereign Edge Inc." }]
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "torch>=2.4",
+    "torchvision>=0.19",
+    "diffusers>=0.31",
+    "transformers>=4.44",
+    "accelerate>=0.34",
+    "safetensors>=0.4.5",
+    "peft>=0.13",
+    "omegaconf>=2.3",
+    "huggingface-hub>=0.25",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "python-multipart>=0.0.9",
+    "pillow>=10.4",
+    "numpy>=1.26",
+    "typer>=0.12",
+    "compel>=2.0.3",
+    "scipy>=1.17.1",
+    "ultralytics>=8.4.146",
+    "pywebview>=6.2.1",
+]
+
+[project.scripts]
+panelforge = "panelforge.cli:app"
+panelforge-desktop = "panelforge.desktop:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/panelforge"]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
